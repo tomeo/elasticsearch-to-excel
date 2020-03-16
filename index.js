@@ -4,9 +4,24 @@ const axios = require('axios');
 
 const request = (url, body) => {
   return axios({
-    method: 'POST',
+    method: 'post',
     url,
-    body
+    data: body,
+    headers: {
+      'Content-type': 'application/json'
+    }
+  }).then(response => response.data).catch(error => { 
+    if (error.response) {
+      console.error(JSON.stringify(error.response.data, null, 2));
+      console.error(error.response.status);
+    } else if (error.request) {
+      console.error(error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error', error.message);
+    }
+
+    return Promise.reject(error);
   })
 }
 
@@ -15,14 +30,14 @@ const scroll = (url, hits, total, current, next) => {
     const nextHits = response.hits.hits
 
     return scroll(url, hits.concat(nextHits), total, current + nextHits.length, request(`${url}/_search/scroll`, {
-      scrollId: response._scroll_id,
+      scroll_id: response._scroll_id,
       scroll: '30s'
     }))
   })
 }
 
 const fetch = (url, index, query) => 
-  request(`${url}/${index}?scroll=1m`, query).then(({ data }) => scroll(url, [], data.hits.total, 0, Promise.resolve(data)))
+  request(`${url}/${index}/_search?scroll=1m`, query).then(data => scroll(url, [], data.hits.total, 0, Promise.resolve(data)))
 
 const toFile = (jsonData, output) => {
   const workbook = XLSX.utils.book_new();
@@ -32,7 +47,7 @@ const toFile = (jsonData, output) => {
 
 const query = async ({ url, index, queryFile, output }) => {
   const file = await fs.promises.readFile(queryFile);
-  const data = await fetch(url, index, JSON.parse(input.toString()));
+  const data = await fetch(url, index, JSON.parse(file.toString()));
 
   toFile(data, output);
   return `File successfully created at ${output}!`
