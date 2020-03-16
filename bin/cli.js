@@ -14,14 +14,14 @@ require('yargs')
     .option('output', {
       alias: 'o',
       type: 'string',
-      default: 'output.xslx',
+      default: 'output.xlsx',
       description: 'output file'
     })
   }, async argv => {
-    console.log(`xlsx called with ${argv.file} output=${argv.output}`)
 
     const input = await fs.promises.readFile(argv.file);
-    program.toFile(input.toJSON(), output);
+    console.log(`xlsx called with ${argv.file} output=${argv.output}`)
+    program.toFile(JSON.parse(input.toString()), argv.output);
 
     console.log(`File writen ${argv.output}`);
   })
@@ -46,7 +46,7 @@ require('yargs')
     .option('output', {
       alias: 'o',
       type: 'string',
-      default: 'output.xslx',
+      default: 'output.xlsx',
       description: 'output file'
     })
     .option('index', {

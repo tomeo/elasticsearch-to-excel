@@ -32,7 +32,7 @@ const toFile = (jsonData, output) => {
 
 const query = async ({ url, index, queryFile, output }) => {
   const file = await fs.promises.readFile(queryFile);
-  const data = await fetch(url, index, file.toJSON());
+  const data = await fetch(url, index, JSON.parse(input.toString()));
 
   toFile(data, output);
   return `File successfully created at ${output}!`
